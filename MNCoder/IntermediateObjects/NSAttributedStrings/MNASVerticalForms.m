@@ -4,7 +4,7 @@
 //
 //  Created by Jeremy Foo on 1/23/12.
 //  Copyright (c) 2012 Jeremy Foo
-//  
+//
 //  Permission is hereby granted, free of charge, to any person obtaining
 //  a copy of this software and associated documentation files (the
 //  "Software"), to deal in the Software without restriction, including
@@ -12,10 +12,10 @@
 //  distribute, sublicense, and/or sell copies of the Software, and to
 //  permit persons to whom the Software is furnished to do so, subject to
 //  the following conditions:
-//  
+//
 //  The above copyright notice and this permission notice shall be
 //  included in all copies or substantial portions of the Software.
-//  
+//
 //  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
 //  EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
 //  MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
@@ -28,6 +28,11 @@
 //
 
 #import "MNASVerticalForms.h"
+#if TARGET_OS_IPHONE
+#if __IPHONE_OS_VERSION_MIN_REQUIRED < __IPHONE_6_0
+NSString *const NSVerticalGlyphFormAttributeName = @"CTVerticalForms";
+#endif
+#endif
 
 @implementation MNASVerticalForms
 @synthesize enabled = _enabled;
@@ -38,7 +43,7 @@
 	if ((self = [super init])) {
 		_enabled = [aDecoder decodeBoolForKey:@"enabled"];
 	}
-	
+
 	return self;
 }
 
@@ -71,7 +76,7 @@
 
 #else
         _enabled = [(NSNumber *)object boolValue];
-        
+
 #endif
 	}
 	return self;
@@ -89,10 +94,10 @@
         } else {
             verticalFormsEnabled = kCFBooleanFalse;
         }
-        
+
         CFStringRef keys[] = { kCTVerticalFormsAttributeName };
         CFTypeRef values[] = { verticalFormsEnabled };
-        
+
         return [(NSDictionary *)CFDictionaryCreate(kCFAllocatorDefault, (const void **)&keys , (const void **)&values, 1, &kCFTypeDictionaryKeyCallBacks, &kCFTypeDictionaryValueCallBacks) autorelease];
     }
 

@@ -4,7 +4,7 @@
 //
 //  Created by Jeremy Foo on 1/23/12.
 //  Copyright (c) 2012 Jeremy Foo
-//  
+//
 //  Permission is hereby granted, free of charge, to any person obtaining
 //  a copy of this software and associated documentation files (the
 //  "Software"), to deal in the Software without restriction, including
@@ -12,10 +12,10 @@
 //  distribute, sublicense, and/or sell copies of the Software, and to
 //  permit persons to whom the Software is furnished to do so, subject to
 //  the following conditions:
-//  
+//
 //  The above copyright notice and this permission notice shall be
 //  included in all copies or substantial portions of the Software.
-//  
+//
 //  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
 //  EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
 //  MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
@@ -28,6 +28,11 @@
 //
 
 #import "MNASStrokeColor.h"
+#if TARGET_OS_IPHONE
+#if __IPHONE_OS_VERSION_MIN_REQUIRED < __IPHONE_6_0
+NSString *const NSStrokeColorAttributeName = @"NSStrokeColor";
+#endif
+#endif
 
 @implementation MNASStrokeColor
 @synthesize color = _color;
@@ -38,7 +43,7 @@
 	if ((self = [super init])) {
 		_color = [[aDecoder decodeObjectForKey:@"color"] retain];
 	}
-	
+
 	return self;
 }
 
@@ -50,7 +55,8 @@
 
 +(BOOL)isSubstituteForObject:(void *)object {
 #if TARGET_OS_IPHONE
-	return (([(id)object isEqualToString:(NSString *)kCTStrokeColorAttributeName]) || ([(id)object isEqualToString:NSStrokeColorAttributeName]));
+	return (([(id)object isEqualToString:(NSString *)kCTStrokeColorAttributeName]) ||
+            ([(id)object isEqualToString:NSStrokeColorAttributeName]));
 #else
 	return [(id)object isEqualToString:NSStrokeColorAttributeName];
 #endif
@@ -61,14 +67,14 @@
 #if TARGET_OS_IPHONE
         if ([attributeName isEqualToString:(NSString *)kCTStrokeColorAttributeName]) {
             _color = [[UIColor colorWithCGColor:object] retain];
-            
+
         } else {
             _color = [(id)object retain];
         }
 #else
 		_color = [(id)object retain];
 #endif
-	}	
+	}
 	return self;
 }
 
@@ -76,13 +82,13 @@
 #if TARGET_OS_IPHONE
     if ([MNCAttributedString hasUIKitAdditions]) {
         return [NSDictionary dictionaryWithObject:self.color forKey:NSStrokeColorAttributeName];
-        
+
     } else {
         CFStringRef keys[] = { kCTStrokeColorAttributeName };
         CFTypeRef values[] = { [self.color CGColor] };
-        
+
         return [(NSDictionary *)CFDictionaryCreate(kCFAllocatorDefault, (const void **)&keys , (const void **)&values, 1, &kCFTypeDictionaryKeyCallBacks, &kCFTypeDictionaryValueCallBacks) autorelease];
-        
+
     }
 #else
 	return [NSDictionary dictionaryWithObject:self.color forKey:NSStrokeColorAttributeName];

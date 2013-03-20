@@ -4,7 +4,7 @@
 //
 //  Created by Jeremy Foo on 1/23/12.
 //  Copyright (c) 2012 Jeremy Foo
-//  
+//
 //  Permission is hereby granted, free of charge, to any person obtaining
 //  a copy of this software and associated documentation files (the
 //  "Software"), to deal in the Software without restriction, including
@@ -12,10 +12,10 @@
 //  distribute, sublicense, and/or sell copies of the Software, and to
 //  permit persons to whom the Software is furnished to do so, subject to
 //  the following conditions:
-//  
+//
 //  The above copyright notice and this permission notice shall be
 //  included in all copies or substantial portions of the Software.
-//  
+//
 //  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
 //  EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
 //  MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
@@ -28,6 +28,11 @@
 //
 
 #import "MNASFont.h"
+#if TARGET_OS_IPHONE
+#if __IPHONE_OS_VERSION_MIN_REQUIRED < __IPHONE_6_0
+NSString *const NSFontAttributeName = @"NSFont";
+#endif
+#endif
 
 @implementation MNASFont
 @synthesize fontName = _fontName, size = _size, baseLineAdjustment = _baseLineAdjustment, obliqueness = _obliqueness, expansion = _expansion;
@@ -43,7 +48,7 @@
 		_expansion = [[aDecoder decodeObjectForKey:@"expansion"] retain];
 
 	}
-	
+
 	return self;
 }
 
@@ -58,7 +63,7 @@
 #pragma mark - MNAttributedStringAttribute Protocol
 
 +(BOOL)isSubstituteForObject:(void *)object {
-#if TARGET_OS_IPHONE    
+#if TARGET_OS_IPHONE
 	return (([(id)object isEqualToString:(NSString *)kCTFontAttributeName]) || ([(id)object isEqualToString:NSFontAttributeName]));
 #else
 	return [(id)object isEqualToString:NSFontAttributeName];
@@ -67,106 +72,122 @@
 
 -(id)_valueForAttribute:(NSString *)attributeName atRange:(NSRange)theRange forAttributedString:(NSAttributedString *)string {
 	__block id retValue = nil;
-	
+
 	[string enumerateAttribute:attributeName inRange:theRange options:NSAttributedStringEnumerationReverse usingBlock:^(id value, NSRange range, BOOL *stop) {
 		if (NSEqualRanges(range, theRange)) {
 			retValue = value;
 			*stop = YES;
 		}
 	}];
-	
+
 	return retValue;
 }
 
 -(id)initWithAttributeName:(NSString *)attributeName value:(void *)object range:(NSRange)range forAttributedString:(NSAttributedString *)string {
 	if ((self = [super init])) {
 #if TARGET_OS_IPHONE
-        
+      
         CTFontDescriptorRef fontDesc;
-        
-        if ([MNCAttributedString hasUIKitAdditions]) {
+
+        //  NSLog(@"[[UIDevice currentDevice] systemVersion] compare:@\"6.0\"] = %d", [[[UIDevice currentDevice] systemVersion] compare:@"6.0"]);
+        //  NSLog(@"[[UIDevice currentDevice] systemVersion]  = %@", [[UIDevice currentDevice] systemVersion] );
+
+        if ( [MNCAttributedString hasUIKitAdditions]) {
+            //  NSLog(@"hasUIKitAdditions");
             if ([attributeName isEqualToString:NSFontAttributeName]) {
+                // CTFont not UIFont in IOS 6.1
+                @try {
+               
                 UIFont *theFont = (UIFont *)object;
-                                
+
                 CFStringRef desckeys[] = { kCTFontNameAttribute, kCTFontSizeAttribute };
                 CFTypeRef descvalues[] = { (CFStringRef)theFont.fontName, (CFNumberRef)[NSNumber numberWithFloat:theFont.pointSize] };
                 CFDictionaryRef descDict = CFDictionaryCreate(kCFAllocatorDefault, (const void **)&desckeys , (const void **)&descvalues, 2, &kCFTypeDictionaryKeyCallBacks, &kCFTypeDictionaryValueCallBacks);
-                
+
                 fontDesc = CTFontDescriptorCreateWithAttributes(descDict);
                 CFRelease(descDict);
-                
+                }
+                @catch (NSException *exception) {
+                    /*  initWithAttributeName NSFont - object CTFont <name: Helvetica, size: 17.000000, matrix: 0x0> 
+                     iOS[34535:c07] -[__NSCFType fontName]: unrecognized selector sent to instance 0x719d250 */
+                    NSLog(@"MNASFont.m bad font initWithAttributeName %@ - object %@", attributeName, object);
+                    fontDesc = CTFontCopyFontDescriptor(object);
+                }
+                @finally {
+
+                }
             } else {
                 fontDesc = CTFontCopyFontDescriptor(object);
             }
         } else {
             fontDesc = CTFontCopyFontDescriptor(object);
         }
-        		
+        //   NSLog(@"MNASFont.m 2 attributeName %@, object %@", attributeName, object);
 		_fontName = CTFontDescriptorCopyAttribute(fontDesc, kCTFontNameAttribute);
-		
+
 		_baseLineAdjustment = CTFontDescriptorCopyAttribute(fontDesc, kCTFontBaselineAdjustAttribute);
-		
+
 		CFNumberRef pointSize = CTFontDescriptorCopyAttribute(fontDesc, kCTFontSizeAttribute);
 		_size = [(NSNumber *)pointSize floatValue];
 		CFRelease(pointSize);
-		
+
 		CFDictionaryRef traits = CTFontDescriptorCopyAttribute(fontDesc, kCTFontTraitsAttribute);
 		_obliqueness = CFDictionaryGetValue(traits, kCTFontSlantTrait);
 		_expansion = CFDictionaryGetValue(traits, kCTFontWidthTrait);
-		
+
 		CFRetain(_obliqueness);
 		CFRetain(_expansion);
-		
-		CFRelease(traits);		
+
+		CFRelease(traits);
 		CFRelease(fontDesc);
-		
+
 #else
-		
+
 		_fontName = (NSString *)CTFontCopyPostScriptName(object);
 
 		_size = ((NSFont *)object).pointSize;
-		
+
 		_baseLineAdjustment = [[self _valueForAttribute:NSBaselineOffsetAttributeName atRange:range forAttributedString:string] copy];
 		_obliqueness = [[self _valueForAttribute:NSObliquenessAttributeName atRange:range forAttributedString:string] copy];
 		_expansion = [[self _valueForAttribute:NSExpansionAttributeName atRange:range forAttributedString:string] copy];
-		
+
 #endif
 		// set default values if they are not filled in
-		
+
 		if (!_baseLineAdjustment)
 			_baseLineAdjustment = [[NSNumber numberWithFloat:0.0] retain];
-		
+
 		if (!_obliqueness)
 			_obliqueness = [[NSNumber numberWithFloat:0.0] retain];
-		
+
 		if (!_expansion)
 			_expansion = [[NSNumber numberWithFloat:0.0] retain];
-		
-	}	
+
+	}
 	return self;
 }
 
 -(NSDictionary *)platformRepresentation {
 #if TARGET_OS_IPHONE
-    
+
     CFStringRef traitskeys[] = { kCTFontSlantTrait, kCTFontWidthTrait };
     CFTypeRef traitsvalues[] = { (CFNumberRef)self.obliqueness, (CFNumberRef)self.expansion };
 
     CFDictionaryRef traitsDict = CFDictionaryCreate(kCFAllocatorDefault, (const void **)&traitskeys , (const void **)&traitsvalues, 2, &kCFTypeDictionaryKeyCallBacks, &kCFTypeDictionaryValueCallBacks);
-    
+
     CFStringRef desckeys[] = { kCTFontNameAttribute, kCTFontBaselineAdjustAttribute, kCTFontTraitsAttribute };
     CFTypeRef descvalues[] = { (CFStringRef)self.fontName, (CFNumberRef)self.baseLineAdjustment, traitsDict };
-    
+
     CFDictionaryRef descDict = CFDictionaryCreate(kCFAllocatorDefault, (const void **)&desckeys , (const void **)&descvalues, 3, &kCFTypeDictionaryKeyCallBacks, &kCFTypeDictionaryValueCallBacks);
     CTFontDescriptorRef descriptor = CTFontDescriptorCreateWithAttributes(descDict);
     CFRelease(traitsDict);
     CFRelease(descDict);
-    
+
     CTFontRef font = CTFontCreateWithFontDescriptor(descriptor, self.size, NULL);
-    
+
     CFStringRef keys[] = { kCTFontAttributeName };
     CFTypeRef values[] = { font };
-    
+
     NSDictionary *platformRepresentation = (NSDictionary *)CFDictionaryCreate(kCFAllocatorDefault, (const void **)&keys , (const void **)&values, 1, &kCFTypeDictionaryKeyCallBacks, &kCFTypeDictionaryValueCallBacks);
     CFRelease(descriptor);
     CFRelease(font);
@@ -181,20 +202,20 @@
 		[dict setObject:self.obliqueness forKey:NSObliquenessAttributeName];
 	if (self.expansion)
 		[dict setObject:self.expansion forKey:NSExpansionAttributeName];
-	
+
 	CFStringRef desckeys[] = { kCTFontNameAttribute  };
 	CFTypeRef descvalues[] = { (CFStringRef)self.fontName };
-	
+
 	CFDictionaryRef descDict = CFDictionaryCreate(kCFAllocatorDefault, (const void **)&desckeys , (const void **)&descvalues, 1, &kCFTypeDictionaryKeyCallBacks, &kCFTypeDictionaryValueCallBacks);
 	CTFontDescriptorRef descriptor = CTFontDescriptorCreateWithAttributes(descDict);
 	CFRelease(descDict);
 
 	CTFontRef font = CTFontCreateWithFontDescriptor(descriptor, self.size, NULL);
 	CFRelease(descriptor);
-	
+
 	[dict setObject:(NSFont *)font forKey:NSFontAttributeName];
 	CFRelease(font);
-    
+
 	return dict;
 
 #endif

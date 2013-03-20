@@ -4,7 +4,7 @@
 //
 //  Created by Jeremy Foo on 1/22/12.
 //  Copyright (c) 2012 Jeremy Foo
-//  
+//
 //  Permission is hereby granted, free of charge, to any person obtaining
 //  a copy of this software and associated documentation files (the
 //  "Software"), to deal in the Software without restriction, including
@@ -12,10 +12,10 @@
 //  distribute, sublicense, and/or sell copies of the Software, and to
 //  permit persons to whom the Software is furnished to do so, subject to
 //  the following conditions:
-//  
+//
 //  The above copyright notice and this permission notice shall be
 //  included in all copies or substantial portions of the Software.
-//  
+//
 //  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
 //  EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
 //  MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
@@ -28,6 +28,11 @@
 //
 
 #import "MNASLigature.h"
+#if TARGET_OS_IPHONE
+#if __IPHONE_OS_VERSION_MIN_REQUIRED < __IPHONE_6_0
+NSString *const NSLigatureAttributeName  = @"NSLigature";
+#endif
+#endif
 
 @implementation MNASLigature
 @synthesize type = _type;
@@ -38,7 +43,7 @@
 	if ((self = [super init])) {
 		_type = [[aDecoder decodeObjectForKey:@"type"] retain];
 	}
-	
+
 	return self;
 }
 
@@ -59,7 +64,7 @@
 -(id)initWithAttributeName:(NSString *)attributeName value:(void *)object range:(NSRange)range forAttributedString:(NSAttributedString *)string {
 	if ((self = [super init])) {
 		_type = [(NSNumber *)object retain];
-	}	
+	}
 	return self;
 }
 
@@ -70,7 +75,7 @@
 
     } else {
         return [NSDictionary dictionaryWithObject:self.type forKey:(NSString *)kCTLigatureAttributeName];
-        
+
     }
 #else
 	return [NSDictionary dictionaryWithObject:self.type forKey:NSLigatureAttributeName];
