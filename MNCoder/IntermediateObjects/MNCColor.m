@@ -58,8 +58,15 @@
 
 -(id)initWithColor:(UIColor *)color {
 	if ((self = [super init])) {
-		[color getRed:&_red green:&_green blue:&_blue alpha:&_alpha];
-	}
+		// Need to deal with CTForegroundColor = " (kCGColorSpaceDeviceGray)";
+		if ([color getRed:&_red green:&_green blue:&_blue alpha:&_alpha] == NO) {
+			CGFloat white;
+			if ([color getWhite:&white alpha:&_alpha]) {
+				_blue = _green = _red = white;
+				// NSLog(@"Grayscale converted to Color");
+			}	// end if getWhite
+		};
+	}	// end if self
 	return self;
 }
 
