@@ -235,8 +235,8 @@ NSString *const kMNAttributedStringAttributeRangeKey = @"kMNAttributedStringAttr
 #pragma mark - Detection of UIKit Additions
 
 #if TARGET_OS_IPHONE
-+(BOOL)hasUIKitAdditions {
-    return ([[[UIDevice currentDevice] systemVersion] compare:@"6.0"] != NSOrderedDescending);
++(BOOL)hasUIKitAdditions { // NSAttributeString is enhanced in ios 6.0
+	return ([[[UIDevice currentDevice] systemVersion] compare:@"6.0"] != NSOrderedAscending);
 }
 #endif
 
