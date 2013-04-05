@@ -30,6 +30,8 @@
 #import <Foundation/Foundation.h>
 #if TARGET_OS_IPHONE
 #import <CoreText/CoreText.h>
+#else
+#import <Cocoa/Cocoa.h>
 #endif
 
 @interface MNASTextTab : NSObject <NSCoding> {
