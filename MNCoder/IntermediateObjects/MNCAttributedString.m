@@ -105,6 +105,7 @@ NSString *const kMNAttributedStringAttributeRangeKey = @"kMNAttributedStringAttr
 		[self registerSubstituteClass:[MNASUnderlineColor class]];
 		[self registerSubstituteClass:[MNASVerticalForms class]];
 		[self registerSubstituteClass:[MNASFont class]];
+        // Attribute not translated -  ->> (NSShadow): NSShadow {3, -3} // Available in iOS 6.0 and later.
 
 		[self _buildIntermediateRepresentationFromString:string];
 	}
@@ -134,6 +135,7 @@ NSString *const kMNAttributedStringAttributeRangeKey = @"kMNAttributedStringAttr
 #if TARGET_OS_IPHONE
 	// translate for iOS
         range = [[self class] _rangeFromRangeDictionaryItem:[dict objectForKey:kMNAttributedStringAttributeRangeKey]];
+          NSLog(@"%@ range %d lenght %d, attributeToInsert %@", self.string, range.location, range.length, attributeToInsert);
 		CFAttributedStringSetAttributes((CFMutableAttributedStringRef)aString, CFRangeMake(range.location, range.length) , (CFDictionaryRef)attributeToInsert, false);
 	
 #else
@@ -175,7 +177,8 @@ NSString *const kMNAttributedStringAttributeRangeKey = @"kMNAttributedStringAttr
 			} else {
 				NSLog(@"Attribute not translated ->> (%@): %@", key, [attrs objectForKey:key]);
 				
-				if (([MNCAttributedString lossless]) && ([[attrs objectForKey:key] conformsToProtocol:@protocol(NSCoding)])) {
+				if (([MNCAttributedString lossless]) &&
+                    ([[attrs objectForKey:key] conformsToProtocol:@protocol(NSCoding)])) {
 					[attributes insertObject:[self _dictionaryForAttributes:[NSDictionary dictionaryWithObject:[attrs objectForKey:key] forKey:key] range:range] atIndex:([attributes count]-1)];
 				}
 			}
@@ -185,8 +188,8 @@ NSString *const kMNAttributedStringAttributeRangeKey = @"kMNAttributedStringAttr
 
 	[attributes removeLastObject];
     [_attributes release], _attributes = nil;
-    
-	_attributes = [attributes copy];
+
+    _attributes = [attributes copy];
 }
 
 -(void)dealloc {

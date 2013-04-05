@@ -92,10 +92,26 @@ NSString *const NSParagraphStyleAttributeName = @"NSParagraphStyle";
 -(NSDictionary *)platformRepresentation {
 #if TARGET_OS_IPHONE
 
-    if ([MNCAttributedString hasUIKitAdditions]) {
+    if ([MNCAttributedString hasUIKitAdditions]) {      // ios 6.0 or later
         NSMutableParagraphStyle *platRep = [[NSParagraphStyle defaultParagraphStyle] mutableCopy];
+/*
+         enum{  IOS and OS X are the same.
+         kCTLeftTextAlignment = 0,
+         kCTRightTextAlignment = 1,
+         kCTCenterTextAlignment = 2,
+         kCTJustifiedTextAlignment = 3,
+         kCTNaturalTextAlignment = 4
+         };  */
+        //  OSX ie.	NSRightTextAlignment     = 1,	 NSCenterTextAlignment    = 2,
+        // REVERSED on IOS ie. NSTextAlignmentCenter    = 1, NSTextAlignmentRight     = 2
+        if (self.alignment == NSTextAlignmentCenter)
+            platRep.alignment = NSTextAlignmentRight;
+        else
+        if (self.alignment == NSTextAlignmentRight)
+                platRep.alignment  = NSTextAlignmentCenter;
+        else
+            platRep.alignment = self.alignment;
 
-        platRep.alignment = self.alignment;
         platRep.lineBreakMode = self.lineBreakMode;
         platRep.hyphenationFactor = self.hyphenationFactor;
         platRep.baseWritingDirection = self.baseWritingDirection;

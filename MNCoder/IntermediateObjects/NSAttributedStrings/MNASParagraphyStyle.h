@@ -30,13 +30,17 @@
 #import <Foundation/Foundation.h>
 #if TARGET_OS_IPHONE
 #import <CoreText/CoreText.h>
+#else
+#import <Cocoa/Cocoa.h>
 #endif
 
 #import "MNCAttributedString.h"
 
 @interface MNASParagraphyStyle : NSObject <MNCAttributedStringAttributeProtocol> {
 @private
-    NSUInteger _alignment;
+    //  OSX NSRightTextAlignment = 1, NSCenterTextAlignment = 2,
+    //  REVERSED on IOS ie. NSTextAlignmentCenter = 1, NSTextAlignmentRight = 2
+    NSUInteger _alignment;  // use OS X Value for alignment.
     CGFloat _firstLineHeadIndent;
     CGFloat _headIndent;
     CGFloat _tailIndent;
