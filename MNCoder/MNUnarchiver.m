@@ -45,6 +45,7 @@
 // preconfigured intermediate objects
 #import "MNCFont.h"
 #import "MNCColor.h"
+#import "MNCShadow.h"
 #import "MNCAttributedString.h"
 
 @implementation MNUnarchiver
@@ -94,6 +95,7 @@
     MNUnarchiver *unarchiver = [[[MNUnarchiver alloc] initForReadingWithData:data] autorelease];
     [unarchiver registerSubstituteClass:[MNCFont class]];
     [unarchiver registerSubstituteClass:[MNCColor class]];
+    [unarchiver registerSubstituteClass:[MNCShadow class]];
 	[unarchiver registerSubstituteClass:[MNCAttributedString class]];
     
     return [[[unarchiver decodedRootObject] retain] autorelease];

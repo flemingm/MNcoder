@@ -32,6 +32,7 @@
 
 #import "MNCFont.h"
 #import "MNCColor.h"
+#import "MNCShadow.h"
 #import "MNCAttributedString.h"
 
 @implementation MNArchiver
@@ -88,6 +89,7 @@
     archiver.outputFormat = NSPropertyListBinaryFormat_v1_0;
     [archiver registerSubstituteClass:[MNCFont class]];
     [archiver registerSubstituteClass:[MNCColor class]];
+	[archiver registerSubstituteClass:[MNCShadow class]];
 	[archiver registerSubstituteClass:[MNCAttributedString class]];
     
     [archiver encodeRootObject:object];
